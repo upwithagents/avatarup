@@ -1,0 +1,8 @@
+{
+  "name": "avatarup-scripts",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@gltf-transform/core": "^4"
+  }
+}
