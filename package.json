@@ -1,0 +1,10 @@
+{
+  "name": "avatarup",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "test": "pnpm -r --if-present test"
+  },
+  "packageManager": "pnpm@10.30.1"
+}
