@@ -1,25 +1,76 @@
 // Captures screenshots of the customizer scene for visual review.
 // Requires `pnpm dev` running.
-// Usage: node apps/web/e2e/screenshot.mjs [outDir] [baseUrl] [view]
+// Usage: node apps/web/e2e/screenshot.mjs [outDir] [baseUrl] [view] \
+//          [--morph name=value ...] [--name shot.png]
 //   view: "Face" | "Torso" | "Full" -> clicks that overlay button, saves task-2-<view>.png
 //         "after-orbit" -> clicks Full, drags to orbit, saves task-2-after-orbit.png
 //         omitted -> original task-1 default + close-up sequence
+//   --morph name=value (repeatable): after load, sets that morph target
+//         influence on every mesh via the window.__avatarupScene e2e hook.
+//         Useful for morphs that have no UI slider yet.
+//   --name shot.png: output file name (required with --morph, optional with
+//         a view; ignored by the default task-1 sequence).
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
 
-const OUT_DIR = process.argv[2] ?? '.superpowers/sdd/shots';
-const BASE_URL = process.argv[3] ?? 'http://localhost:3000';
+const positional = [];
+const morphs = [];
+let outName = null;
+const argv = process.argv.slice(2);
+for (let i = 0; i < argv.length; i++) {
+  if (argv[i] === '--morph') {
+    const [name, value] = String(argv[++i] ?? '').split('=');
+    if (!name || Number.isNaN(Number(value))) {
+      console.error('--morph expects name=value (value numeric)');
+      process.exit(1);
+    }
+    morphs.push([name, Number(value)]);
+  } else if (argv[i] === '--name') {
+    outName = argv[++i];
+  } else {
+    positional.push(argv[i]);
+  }
+}
+
+const OUT_DIR = positional[0] ?? '.superpowers/sdd/shots';
+const BASE_URL = positional[1] ?? 'http://localhost:3000';
+const VIEW_ARG = positional[2];
 const SETTLE_MS = 3000; // env map + soft shadow warmup
+
+if (morphs.length > 0 && !outName) {
+  console.error('--morph requires --name <file.png>');
+  process.exit(1);
+}
 
 await mkdir(OUT_DIR, { recursive: true });
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 
-// Set to a view-preset name (e.g. "face") to click that overlay button and
-// capture a single `task-2-<view>.png` instead of the default task-1 sequence.
-const VIEW_ARG = process.argv[4];
+/** Set morph influences on every mesh of the loaded scene (by target name). */
+async function applyMorphs() {
+  if (morphs.length === 0) return;
+  const applied = await page.evaluate((pairs) => {
+    const scene = window.__avatarupScene;
+    if (!scene) return -1;
+    let count = 0;
+    scene.traverse((obj) => {
+      if (!obj.morphTargetDictionary || !obj.morphTargetInfluences) return;
+      for (const [name, value] of pairs) {
+        const index = obj.morphTargetDictionary[name];
+        if (index === undefined) continue;
+        obj.morphTargetInfluences[index] = value;
+        count++;
+      }
+    });
+    return count;
+  }, morphs);
+  if (applied === -1) throw new Error('window.__avatarupScene missing — is the scene loaded?');
+  if (applied === 0) throw new Error(`no mesh has morphs ${morphs.map(([n]) => n).join(', ')}`);
+  console.log(`applied ${morphs.length} morph(s) to ${applied} mesh/morph slots`);
+  await page.waitForTimeout(400);
+}
 
 try {
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
@@ -60,7 +111,17 @@ try {
     const button = page.getByRole('button', { name: VIEW_ARG, exact: true });
     await button.click();
     await page.waitForTimeout(1200); // smooth CameraControls transition
-    const shot = join(OUT_DIR, `task-2-${VIEW_ARG.toLowerCase()}.png`);
+    await applyMorphs();
+    const shot = join(OUT_DIR, outName ?? `task-2-${VIEW_ARG.toLowerCase()}.png`);
+    await page.screenshot({ path: shot });
+    console.log(`saved ${shot}`);
+    await browser.close();
+    process.exit(0);
+  }
+
+  if (morphs.length > 0) {
+    await applyMorphs();
+    const shot = join(OUT_DIR, outName);
     await page.screenshot({ path: shot });
     console.log(`saved ${shot}`);
     await browser.close();

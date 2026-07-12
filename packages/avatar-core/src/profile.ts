@@ -16,7 +16,10 @@ export const PROFILE_STORAGE_KEY = 'avatarup.profile.v1';
 const DEFAULT_APPEARANCE: AvatarAppearance = {
   skinColor: '#c68863',
   hairColor: '#3b2f2f',
-  eyeColor: '#4a6c8c',
+  // Near-neutral: the eyes material is textured (white sclera + brown iris)
+  // and material.color multiplies the whole texture, so saturated defaults
+  // would tint the sclera too.
+  eyeColor: '#f2ece4',
 };
 
 export function createDefaultProfile(): AvatarProfile {

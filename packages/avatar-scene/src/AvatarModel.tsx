@@ -10,6 +10,10 @@ export function AvatarModel({ url, profile }: { url: string; profile: AvatarProf
   const { scene } = useGLTF(url);
 
   useEffect(() => {
+    // E2E hook: lets browser tests (apps/web/e2e/*) reach the loaded scene,
+    // e.g. to set morph influences that have no UI slider yet.
+    (window as unknown as Record<string, unknown>).__avatarupScene = scene;
+
     scene.traverse((obj) => {
       if (!(obj instanceof Mesh)) return;
 
