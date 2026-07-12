@@ -1,9 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import { applyMorphPreset, type AvatarProfile } from '@avatarup/avatar-core';
+import { useRef, useState, type ChangeEvent } from 'react';
+import {
+  applyMorphPreset,
+  validateSkinTextureUpload,
+  withSkinTexture,
+  type AvatarProfile,
+} from '@avatarup/avatar-core';
 import { COLOR_CONTROLS, GROUPED_CONTROLS } from '@/lib/controls';
 import { GENDER_PRESETS, type Gender } from '@/lib/presets';
+import { SKIN_TEXTURE_PRESETS } from '@/lib/skin-textures';
+import { getTextureStore } from '@/lib/texture-store';
 
 interface Props {
   profile: AvatarProfile;
@@ -21,10 +28,39 @@ export function CustomizerPanel({ profile, onChange }: Props) {
   // control — a preset only overwrites a handful of morphs, so this is not
   // derived from profile.morphs (the user may have since tweaked one of them).
   const [activeGender, setActiveGender] = useState<Gender | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleGenderClick(gender: Gender) {
     setActiveGender(gender);
     onChange(applyMorphPreset(profile, GENDER_PRESETS[gender]));
+  }
+
+  function handleSkinTextureNone() {
+    setUploadError(null);
+    onChange(withSkinTexture(profile, null));
+  }
+
+  function handleSkinTexturePreset(id: string) {
+    setUploadError(null);
+    onChange(withSkinTexture(profile, { kind: 'preset', id }));
+  }
+
+  async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-selecting the same file later
+    if (!file) return;
+
+    const result = validateSkinTextureUpload(file);
+    if (!result.ok) {
+      setUploadError(result.error);
+      return;
+    }
+    setUploadError(null);
+
+    const id = crypto.randomUUID();
+    await getTextureStore().saveTexture(id, file);
+    onChange(withSkinTexture(profile, { kind: 'upload', id }));
   }
 
   return (
@@ -116,6 +152,62 @@ export function CustomizerPanel({ profile, onChange }: Props) {
             />
           </label>
         ))}
+
+        <div className="mt-1">
+          <span className="mb-2 block text-sm">Skin texture</span>
+          <div role="group" aria-label="Skin texture" className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              aria-pressed={profile.appearance.skinTexture === null}
+              onClick={handleSkinTextureNone}
+              className={`flex h-10 w-10 items-center justify-center rounded-md border text-[10px] font-medium transition-colors ${
+                profile.appearance.skinTexture === null
+                  ? 'border-zinc-100 bg-zinc-100 text-zinc-900'
+                  : 'border-zinc-700 bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+              }`}
+            >
+              None
+            </button>
+            {SKIN_TEXTURE_PRESETS.map((preset) => {
+              const pressed =
+                profile.appearance.skinTexture?.kind === 'preset' &&
+                profile.appearance.skinTexture.id === preset.id;
+              return (
+                <button
+                  key={preset.id}
+                  type="button"
+                  aria-pressed={pressed}
+                  onClick={() => handleSkinTexturePreset(preset.id)}
+                  title={preset.label}
+                  className={`h-10 w-10 overflow-hidden rounded-md border-2 transition-colors ${
+                    pressed ? 'border-zinc-100' : 'border-zinc-700 hover:border-zinc-500'
+                  }`}
+                >
+                  <img src={preset.url} alt={preset.label} className="h-full w-full object-cover" />
+                </button>
+              );
+            })}
+          </div>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="mt-2 rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-200 transition-colors hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400"
+          >
+            Upload…
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          {uploadError && (
+            <p role="alert" className="mt-2 text-xs text-red-400">
+              {uploadError}
+            </p>
+          )}
+        </div>
       </section>
     </aside>
   );

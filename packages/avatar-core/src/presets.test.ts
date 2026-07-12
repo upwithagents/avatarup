@@ -39,6 +39,6 @@ describe('applyMorphPreset', () => {
     profile.appearance.hairColor = '#123456';
     const result = applyMorphPreset(profile, { feminine: 1 });
     expect(result.appearance).toEqual(profile.appearance);
-    expect(result.version).toBe(1);
+    expect(result.version).toBe(2);
   });
 });

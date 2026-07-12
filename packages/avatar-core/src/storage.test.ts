@@ -32,4 +32,18 @@ describe('createProfileStore', () => {
     );
     expect(store.load()).toEqual(createDefaultProfile());
   });
+
+  it('load migrates a v1 profile found under the (unchanged) storage key to v2', () => {
+    const v1Json = JSON.stringify({
+      version: 1,
+      morphs: { 'jaw-width': 0.5 },
+      appearance: { skinColor: '#c68863', hairColor: '#3b2f2f', eyeColor: '#4a6c8c' },
+    });
+    const store = createProfileStore(memoryStorage({ [PROFILE_STORAGE_KEY]: v1Json }));
+    const loaded = store.load();
+    expect(loaded.version).toBe(2);
+    expect(loaded.morphs).toEqual({ 'jaw-width': 0.5 });
+    expect(loaded.appearance.eyeColor).toBe(createDefaultProfile().appearance.eyeColor);
+    expect(loaded.appearance.skinTexture).toBeNull();
+  });
 });

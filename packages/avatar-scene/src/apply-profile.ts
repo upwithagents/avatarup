@@ -1,7 +1,11 @@
-import { clamp01, type AvatarAppearance } from '@avatarup/avatar-core';
+import { clamp01 } from '@avatarup/avatar-core';
 
-/** glTF material name -> which appearance color drives it. */
-export const MATERIAL_COLOR_SLOTS: Record<string, keyof AvatarAppearance> = {
+type AvatarColorKey = 'skinColor' | 'hairColor' | 'eyeColor';
+
+/** glTF material name -> which appearance color drives it. Deliberately
+ * narrower than `keyof AvatarAppearance` (excludes `skinTexture`, which
+ * isn't a color and is applied separately — see skin-texture.ts). */
+export const MATERIAL_COLOR_SLOTS: Record<string, AvatarColorKey> = {
   skin: 'skinColor',
   hair: 'hairColor',
   eyes: 'eyeColor',

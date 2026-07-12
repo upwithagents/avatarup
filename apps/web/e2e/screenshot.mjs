@@ -13,9 +13,13 @@
 //         name (e.g. the panel's Female/Male gender toggle) before the shot.
 //   --summary "label" (repeatable): clicks a <details><summary> by its text
 //         (e.g. a collapsible morph group) to expand/collapse it.
+//   --upload path/to/file.png (repeatable): sets the given file on the
+//         page's first <input type="file"> via Playwright's setInputFiles
+//         (bypasses the native file-picker dialog entirely, so it works
+//         headless) — e.g. the skin-texture upload input.
 //   --name shot.png: output file name (required with --morph/--click/
-//         --summary, optional with a view; ignored by the default task-1
-//         sequence).
+//         --summary/--upload, optional with a view; ignored by the default
+//         task-1 sequence).
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
@@ -24,6 +28,7 @@ const positional = [];
 const morphs = [];
 const clicks = [];
 const summaries = [];
+const uploads = [];
 let outName = null;
 const argv = process.argv.slice(2);
 for (let i = 0; i < argv.length; i++) {
@@ -38,6 +43,8 @@ for (let i = 0; i < argv.length; i++) {
     clicks.push(argv[++i]);
   } else if (argv[i] === '--summary') {
     summaries.push(argv[++i]);
+  } else if (argv[i] === '--upload') {
+    uploads.push(argv[++i]);
   } else if (argv[i] === '--name') {
     outName = argv[++i];
   } else {
@@ -50,8 +57,8 @@ const BASE_URL = positional[1] ?? 'http://localhost:3000';
 const VIEW_ARG = positional[2];
 const SETTLE_MS = 3000; // env map + soft shadow warmup
 
-if ((morphs.length > 0 || clicks.length > 0 || summaries.length > 0) && !outName) {
-  console.error('--morph/--click/--summary require --name <file.png>');
+if ((morphs.length > 0 || clicks.length > 0 || summaries.length > 0 || uploads.length > 0) && !outName) {
+  console.error('--morph/--click/--summary/--upload require --name <file.png>');
   process.exit(1);
 }
 
@@ -74,6 +81,18 @@ async function applyClicks() {
       el?.scrollIntoView({ block: 'start' });
     }, label);
     await page.waitForTimeout(200);
+  }
+}
+
+/** Set files on the page's file input(s) in order (e.g. skin-texture
+ * upload) — setInputFiles works on a hidden input without opening a native
+ * dialog, so this runs fine headless. */
+async function applyUploads() {
+  for (const path of uploads) {
+    await page.locator('input[type="file"]').first().setInputFiles(path);
+    // Async: validate -> save blob to IndexedDB -> update profile -> load
+    // texture off an object URL.
+    await page.waitForTimeout(700);
   }
 }
 
@@ -147,6 +166,7 @@ try {
     await page.waitForTimeout(1200); // smooth CameraControls transition
     await applyClicks();
     await applyMorphs();
+    await applyUploads();
     const shot = join(OUT_DIR, outName ?? `task-2-${VIEW_ARG.toLowerCase()}.png`);
     await page.screenshot({ path: shot });
     console.log(`saved ${shot}`);
@@ -154,9 +174,10 @@ try {
     process.exit(0);
   }
 
-  if (morphs.length > 0 || clicks.length > 0 || summaries.length > 0) {
+  if (morphs.length > 0 || clicks.length > 0 || summaries.length > 0 || uploads.length > 0) {
     await applyClicks();
     await applyMorphs();
+    await applyUploads();
     const shot = join(OUT_DIR, outName);
     await page.screenshot({ path: shot });
     console.log(`saved ${shot}`);
