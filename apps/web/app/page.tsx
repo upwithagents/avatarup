@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { createDefaultProfile } from '@avatarup/avatar-core';
 import { AvatarStage } from '@/components/AvatarStage';
+import { useAvatarProfile } from '@/lib/use-avatar-profile';
 
 export default function Home() {
-  const [profile, setProfile] = useState(createDefaultProfile);
+  const [profile, setProfile] = useAvatarProfile();
   return <AvatarStage profile={profile} onProfileChange={setProfile} />;
 }
