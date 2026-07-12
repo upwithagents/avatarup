@@ -1,0 +1,232 @@
+[
+  {
+    "group": "Body",
+    "morph": "feminine",
+    "label": "Feminine"
+  },
+  {
+    "group": "Body",
+    "morph": "masculine",
+    "label": "Masculine"
+  },
+  {
+    "group": "Body",
+    "morph": "muscular",
+    "label": "Muscular"
+  },
+  {
+    "group": "Body",
+    "morph": "heavyset",
+    "label": "Heavyset"
+  },
+  {
+    "group": "Body",
+    "morph": "slender",
+    "label": "Slender"
+  },
+  {
+    "group": "Body",
+    "morph": "tall",
+    "label": "Tall"
+  },
+  {
+    "group": "Body",
+    "morph": "petite",
+    "label": "Petite"
+  },
+  {
+    "group": "Body",
+    "morph": "arms-thickness",
+    "label": "Arm thickness"
+  },
+  {
+    "group": "Body",
+    "morph": "legs-thickness",
+    "label": "Leg thickness"
+  },
+  {
+    "group": "Body",
+    "morph": "hands-size",
+    "label": "Hand size"
+  },
+  {
+    "group": "Body",
+    "morph": "feet-size",
+    "label": "Foot size"
+  },
+  {
+    "group": "Torso",
+    "morph": "belly",
+    "label": "Belly"
+  },
+  {
+    "group": "Torso",
+    "morph": "bust",
+    "label": "Bust"
+  },
+  {
+    "group": "Torso",
+    "morph": "buttocks",
+    "label": "Buttocks"
+  },
+  {
+    "group": "Torso",
+    "morph": "shoulders-width",
+    "label": "Shoulder width"
+  },
+  {
+    "group": "Torso",
+    "morph": "waist-narrow",
+    "label": "Narrow waist"
+  },
+  {
+    "group": "Torso",
+    "morph": "hips-width",
+    "label": "Hip width"
+  },
+  {
+    "group": "Torso",
+    "morph": "torso-v-shape",
+    "label": "V-shape torso"
+  },
+  {
+    "group": "Torso",
+    "morph": "neck-thickness",
+    "label": "Neck thickness"
+  },
+  {
+    "group": "Torso",
+    "morph": "neck-length",
+    "label": "Neck length"
+  },
+  {
+    "group": "Head",
+    "morph": "head-round",
+    "label": "Round face"
+  },
+  {
+    "group": "Head",
+    "morph": "face-oval",
+    "label": "Oval face"
+  },
+  {
+    "group": "Head",
+    "morph": "face-square",
+    "label": "Square face"
+  },
+  {
+    "group": "Head",
+    "morph": "forehead-height",
+    "label": "Forehead height"
+  },
+  {
+    "group": "Head",
+    "morph": "temples-width",
+    "label": "Temple width"
+  },
+  {
+    "group": "Head",
+    "morph": "ear-size",
+    "label": "Ear size"
+  },
+  {
+    "group": "Face",
+    "morph": "jaw-width",
+    "label": "Jaw width"
+  },
+  {
+    "group": "Face",
+    "morph": "chin-prominent",
+    "label": "Chin size"
+  },
+  {
+    "group": "Face",
+    "morph": "chin-height",
+    "label": "Chin height"
+  },
+  {
+    "group": "Face",
+    "morph": "cheek-fullness",
+    "label": "Cheek fullness"
+  },
+  {
+    "group": "Face",
+    "morph": "cheekbones",
+    "label": "Cheekbones"
+  },
+  {
+    "group": "Face",
+    "morph": "brow-height",
+    "label": "Brow height"
+  },
+  {
+    "group": "Face",
+    "morph": "brow-angle",
+    "label": "Brow angle"
+  },
+  {
+    "group": "Eyes",
+    "morph": "eye-size",
+    "label": "Eye size"
+  },
+  {
+    "group": "Eyes",
+    "morph": "eye-spacing",
+    "label": "Eye spacing"
+  },
+  {
+    "group": "Eyes",
+    "morph": "eye-tilt",
+    "label": "Eye tilt"
+  },
+  {
+    "group": "Eyes",
+    "morph": "eyelid-height",
+    "label": "Eyelid height"
+  },
+  {
+    "group": "Nose",
+    "morph": "nose-size",
+    "label": "Nose size"
+  },
+  {
+    "group": "Nose",
+    "morph": "nose-width",
+    "label": "Nose width"
+  },
+  {
+    "group": "Nose",
+    "morph": "nose-length",
+    "label": "Nose length"
+  },
+  {
+    "group": "Nose",
+    "morph": "nose-tip-up",
+    "label": "Nose tip up"
+  },
+  {
+    "group": "Nose",
+    "morph": "nose-hump",
+    "label": "Nose hump"
+  },
+  {
+    "group": "Nose",
+    "morph": "nostril-flare",
+    "label": "Nostril flare"
+  },
+  {
+    "group": "Mouth",
+    "morph": "mouth-width",
+    "label": "Mouth width"
+  },
+  {
+    "group": "Mouth",
+    "morph": "lip-fullness",
+    "label": "Lip fullness"
+  },
+  {
+    "group": "Mouth",
+    "morph": "mouth-corners-up",
+    "label": "Smile corners"
+  }
+]
