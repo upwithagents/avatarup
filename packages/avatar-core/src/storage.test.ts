@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createDefaultProfile } from './profile';
+import { PROFILE_STORAGE_KEY, createDefaultProfile } from './profile';
 import { createProfileStore } from './storage';
 
 function memoryStorage(initial: Record<string, string> = {}) {
@@ -28,7 +28,7 @@ describe('createProfileStore', () => {
 
   it('load falls back to defaults on corrupt stored JSON', () => {
     const store = createProfileStore(
-      memoryStorage({ 'avatarup.profile.v1': '{corrupt' })
+      memoryStorage({ [PROFILE_STORAGE_KEY]: '{corrupt' })
     );
     expect(store.load()).toEqual(createDefaultProfile());
   });

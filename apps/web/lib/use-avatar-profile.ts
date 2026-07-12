@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   createDefaultProfile,
   createProfileStore,
@@ -9,28 +9,40 @@ import {
 
 const SAVE_DEBOUNCE_MS = 300;
 
+interface ProfileState {
+  profile: AvatarProfile;
+  hydrated: boolean;
+}
+
 export function useAvatarProfile(): [AvatarProfile, (p: AvatarProfile) => void] {
-  // Start from defaults on both server and first client render (hydration
-  // match), then load the stored profile after mount.
-  const [profile, setProfile] = useState(createDefaultProfile);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const loaded = useRef(false);
+  // Defaults on both server and first client render (hydration match);
+  // the stored profile is applied after mount, in the same state update
+  // that marks hydration complete — so the save effect below can never
+  // schedule a save of the pre-load default profile.
+  const [state, setState] = useState<ProfileState>(() => ({
+    profile: createDefaultProfile(),
+    hydrated: false,
+  }));
 
   useEffect(() => {
-    setProfile(createProfileStore(window.localStorage).load());
-    loaded.current = true;
+    setState({
+      profile: createProfileStore(window.localStorage).load(),
+      hydrated: true,
+    });
   }, []);
 
   useEffect(() => {
-    if (!loaded.current) return;
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
-      createProfileStore(window.localStorage).save(profile);
+    if (!state.hydrated) return;
+    const timer = setTimeout(() => {
+      createProfileStore(window.localStorage).save(state.profile);
     }, SAVE_DEBOUNCE_MS);
-    return () => {
-      if (timer.current) clearTimeout(timer.current);
-    };
-  }, [profile]);
+    return () => clearTimeout(timer);
+  }, [state]);
 
-  return [profile, setProfile];
+  const setProfile = useCallback(
+    (profile: AvatarProfile) => setState({ profile, hydrated: true }),
+    []
+  );
+
+  return [state.profile, setProfile];
 }
