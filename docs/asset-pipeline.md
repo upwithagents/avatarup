@@ -30,27 +30,58 @@ drives MPFB2's Python services headless:
    negative), and collapses them into a single named key via Blender's
    "new shape from mix". This flattens MPFB's macro *combination system*
    into plain glTF-exportable morph targets.
+
+   **Full-strength gender.** The MPFB gender macro is a single
+   female(0)↔male(1) interpolation segment, so the `gender: 0.0`/`1.0`
+   deltas from the 0.5 default already carry the full single-gender target
+   weight (`universal-female-young-…` goes 0.5 → 0.99, the male counterpart
+   0.5 → 0). What made `feminine` read weak was the *breast* macro:
+   MPFB excludes all `breast/*` targets when cupsize/firmness sit at the
+   default 0.5/0.5 (`averagecup-averagefirmness` is the forbidden neutral
+   combination), so a pure gender delta stays flat-chested. `feminine` is
+   therefore baked from `{gender: 0.0, cupsize: 0.75}`, which resolves to
+   `breast/female-young-averagemuscle-averageweight-maxcup-averagefirmness`
+   at ~0.49 on top of the full female body targets.
 4. **Detail sliders** are individual MakeHuman system targets shipped inside
    MPFB2 (`data/targets/**`), loaded via `TargetService.load_target`.
-   Left-side-only targets (eye/cheek/ear) are mirrored to the right with
-   `TargetService.symmetrize_shape_key` so one slider drives both sides.
-5. **Eyes and hair placeholders** are extracted from the basemesh's helper
-   geometry (`helper-l-eye`/`helper-r-eye` and `helper-hair` vertex groups).
-   The long-hair helper is trimmed to a scalp cap (vertices above the brow
-   line) and pushed 4 mm along normals to avoid z-fighting. Extraction
-   happens *after* the shape keys are loaded and uses edit-mode deletion, so
-   both meshes keep same-named shape keys — MakeHuman targets also displace
-   helper vertices, which makes eyes/hair follow the head when body morphs
-   (tall, masculine, ...) are applied at runtime. The scene applies morphs
-   by name to every mesh, so they stay in sync automatically.
+   Bilateral features (eyes, cheeks, ears, arms, legs, hands, feet) list
+   both `l-`/`r-` targets in one combo so a single slider drives both sides.
+5. **Eyes and hair** are real MakeHuman assets vendored under
+   `scripts/blender/assets/` (see [Asset sources & licenses](#asset-sources--licenses)),
+   loaded with `HumanService.add_mhclo_asset` (`material_type="NONE"`), which
+   imports the mesh, fits it to the basemesh via the mhclo vertex mapping
+   (every asset vertex is bound to three body vertices + offset) and rigs it.
+   Then, for **each curated morph**, the script sets that shape key to 1.0 on
+   the body, refits the asset (`ClothesService.fit_clothes_to_human`), and
+   stores the fitted positions as a same-named shape key on the asset —
+   per-vertex deltas under 1 µm are snapped to the basis so unrelated morphs
+   export as (nearly) empty sparse accessors. The scene applies morph values
+   by name to every mesh, so eyes and hair track the head automatically
+   (eye-size, eye-spacing, feminine, tall, … all verified visually).
+   Fitting references basemesh vertex indices *including helpers*, so all of
+   this runs **before** helper removal.
 6. The default MPFB rig (`HumanService.add_builtin_rig(..., "default")`) is
    added with vertex weights — not needed by the current customizer but kept
-   for future animation phases. Eyes/hair are parented to the armature (no
-   skin weights; they are placeholder meshes).
+   for future animation phases. Eyes/hair get interpolated weights via
+   `ClothesService.set_up_rigging`.
 7. Helper geometry is removed while preserving shape keys
    (`ExportService.bake_modifiers_remove_helpers` with `bake_masks=True`).
-8. Plain Principled BSDF materials are created and assigned; the app
-   recolors them at runtime by name.
+8. Materials are created and assigned:
+   - `skin`: plain Principled BSDF (recolored at runtime by name).
+   - `eyes`: Principled BSDF + `brown_eye.png` (downscaled to 512²,
+     packed). Texture alpha goes through a `Math:Round` node into the BSDF
+     Alpha input, which the glTF exporter emits as **alphaMode MASK** —
+     the eyeball mesh has an outer cornea layer whose UV region is fully
+     transparent; without alpha it renders as an opaque shell hiding the
+     iris, and with BLEND it would suffer three.js transparency sorting
+     (eyes drawing over hair).
+   - `hair`: Principled BSDF + `short02_diffuse.png` (downscaled to 1024²,
+     packed), texture alpha straight into BSDF Alpha → **alphaMode BLEND**
+     for soft strand edges.
+9. The script writes `scripts/fixtures/controls-manifest.json` —
+   `[{ group, morph, label }]` for every curated morph — and fails the build
+   if the manifest and the exported shape keys ever drift apart. The UI
+   consumes this file, so slider lists can't drift from the asset.
 
 ## Export settings
 
@@ -60,19 +91,30 @@ negligible at these delta sizes), `export_animations=False`,
 `export_skins=True`, `export_apply=False` (must stay off — applying modifiers
 would discard shape keys).
 
+## Asset sources & licenses
+
+Both assets are **CC0 1.0** (public domain dedication) from the MakeHuman
+project and are vendored (mesh + material + texture) under
+`scripts/blender/assets/` so the pipeline runs offline and reproducibly.
+No attribution is legally required; sources kept here for provenance:
+
+| Asset | Files | Source (CC0) |
+| --- | --- | --- |
+| Eyeballs ("HighPolyEyes") | `assets/eyes/high-poly/high-poly.{mhclo,obj}`, `assets/eyes/materials/brown.mhmat`, `brown_eye.png` | [makehumancommunity/makehuman](https://github.com/makehumancommunity/makehuman) `makehuman/data/eyes/` (assets released CC0 Sept 2020 by Data Collection AB, Joel Palmius, Jonas Hauquier) |
+| Hair ("short02") | `assets/hair/short02.{mhclo,mhmat,obj}`, `short02_diffuse.png` | [makehumancommunity/makehuman-assets](https://github.com/makehumancommunity/makehuman-assets) `base/hair/short02/` (repo LICENSE.txt = CC0 1.0) |
+
+Alternative hairstyles evaluated: `bob02` (nice layered bob, but its fringe
+covers one eye and exposes transparent-vs-transparent draw-order artifacts
+with the eyes). The repo has ~10 CC0 styles (afro01, bob01/02, braid01,
+long01, ponytail01, short01–04) if we add hairstyle selection later.
+
 ## Compression
 
-**None (deliberate).** The raw export is ~1.9 MB — well under the 10 MB
-budget — because Blender writes morph targets as sparse accessors.
-`gltfpack` was evaluated and rejected for now:
-
-- with `-cc` (meshopt) the app would need `MeshoptDecoder` wired into the
-  loader, which is out of scope here;
-- without `-cc` (quantization only) the saving is small in absolute terms,
-  and the `npm exec gltfpack` install footprint is ~680 MB, which this
-  machine's disk cannot spare.
-
-Revisit if the asset grows (textures, more morphs).
+**None (deliberate).** The raw export is ~4.4 MB — under the 10 MB budget.
+Morph targets export as sparse accessors; the two packed PNG textures
+(hair 1024², eyes 512²) account for ~1.5 MB. `gltfpack` was evaluated and
+rejected earlier (needs `MeshoptDecoder` wiring and a ~680 MB npx install).
+Revisit if the asset grows further.
 
 ## Validation
 
@@ -80,51 +122,55 @@ Revisit if the asset grows (textures, more morphs).
 node scripts/inspect-gltf.mjs apps/web/public/models/avatar-base.glb
 ```
 
-Must print the 20 morph target names below on the `Body` mesh and materials
-`skin`, `eyes`, `hair`. Then:
+Must print the 46 morph target names below on the `Body`, `Eyes` and `Hair`
+meshes (all three carry the same list) and materials `skin`, `eyes`, `hair`.
+Then:
 
 ```bash
 pnpm dev            # app on :3000 (or :3001 if busy)
 node apps/web/e2e/customizer-smoke.mjs [http://localhost:3001]
 ```
 
+For visual checks of morphs that have no UI slider yet:
+
+```bash
+node apps/web/e2e/screenshot.mjs /tmp/shots http://localhost:3000 Face \
+    --morph feminine=1 --morph eye-size=1 --name check.png
+```
+
 ## Material naming contract
 
 `packages/avatar-scene` recolors materials by exact glTF material name
-(`MATERIAL_COLOR_SLOTS`): `skin` (Body), `hair` (Hair cap), `eyes` (Eyes).
+(`MATERIAL_COLOR_SLOTS`): `skin` (Body), `hair` (Hair), `eyes` (Eyes).
 Any future asset revision must keep these names.
 
-## Curated morph list
+**Tinting caveat:** `eyes` and `hair` are now textured; `material.color`
+*multiplies* the texture, so tints darken/colorize the whole map. For eyes
+this means a saturated color tints the white sclera too — the default
+profile eye color is therefore near-neutral (`#f2ece4`), and eye-color
+tinting has limited effect until iris-only tinting exists (future task).
 
-Morph values are [0, 1]; the model rests at 0 on all sliders.
+## Curated morph list (46)
 
-| Morph target | What it does | Source |
-| --- | --- | --- |
-| `feminine` | full-body female shape | macro gender → 0.0 |
-| `masculine` | full-body male shape | macro gender → 1.0 |
-| `muscular` | muscle definition | macro muscle → 1.0 |
-| `heavyset` | body fat up | macro weight → 1.0 |
-| `slender` | body fat down | macro weight → 0.0 |
-| `tall` | height up (~+0.7 m at 1.0) | macro height → 1.0 |
-| `petite` | height down | macro height → 0.0 |
-| `belly` | rounder stomach | `stomach-pregnant-incr` |
-| `bust` | bust circumference | `measure-bust-circ-incr` |
-| `buttocks` | buttocks volume | `buttocks-volume-incr` |
-| `head-round` | rounder face shape | `head-round` |
-| `jaw-width` | wider jaw | `chin-width-incr` |
-| `chin-prominent` | more prominent chin | `chin-prominent-incr` |
-| `nose-size` | bigger nose | `nose-volume-incr` |
-| `nose-width` | wider nose | `nose-scale-horiz-incr` |
-| `mouth-width` | wider mouth | `mouth-scale-horiz-incr` |
-| `lip-fullness` | fuller lips | upper+lower lip volume combo |
-| `eye-size` | bigger eyes | `l-eye-scale-incr`, symmetrized |
-| `cheek-fullness` | fuller cheeks | `l-cheek-volume-incr`, symmetrized |
-| `ear-size` | bigger ears | `l-ear-scale-incr`, symmetrized |
+Morph values are [0, 1]; the model rests at 0 on all sliders. The full
+`group`/`morph`/`label` table lives in `scripts/fixtures/controls-manifest.json`
+(generated — regenerating the asset rewrites it). Summary by group:
 
-Macro sliders are deltas from the androgynous default, so e.g. `feminine`
-and `masculine` at 1.0 simultaneously roughly cancel out. Because the base
-is androgynous, macro deltas are the female/male average (about half the
-strength of a single-gender MakeHuman slider) — subtle by design.
+| Group | Morphs |
+| --- | --- |
+| Body | `feminine`, `masculine`, `muscular`, `heavyset`, `slender`, `tall`, `petite`, `arms-thickness`, `legs-thickness`, `hands-size`, `feet-size` |
+| Torso | `belly`, `bust`, `buttocks`, `shoulders-width`, `waist-narrow`, `hips-width`, `torso-v-shape`, `neck-thickness`, `neck-length` |
+| Head | `head-round`, `face-oval`, `face-square`, `forehead-height`, `temples-width`, `ear-size` |
+| Face | `jaw-width`, `chin-prominent`, `chin-height`, `cheek-fullness`, `cheekbones`, `brow-height`, `brow-angle` |
+| Eyes | `eye-size`, `eye-spacing`, `eye-tilt`, `eyelid-height` |
+| Nose | `nose-size`, `nose-width`, `nose-length`, `nose-tip-up`, `nose-hump`, `nostril-flare` |
+| Mouth | `mouth-width`, `lip-fullness`, `mouth-corners-up` |
+
+The 20 morphs that predate asset v2 keep their exact names, so profiles and
+the current `apps/web/lib/controls.ts` list stay valid. Macro sliders are
+deltas from the androgynous default; `feminine: 1` reaches MakeHuman's full
+female endpoint (plus a maxcup breast component) and `masculine: 1` the full
+male endpoint, so setting both to 1.0 roughly cancels out.
 
 ## Regenerating from scratch
 
@@ -133,7 +179,8 @@ strength of a single-gender MakeHuman slider) — subtle by design.
 blender --online-mode --command extension sync
 blender --online-mode --command extension install mpfb --enable
 
-# 2. Author + export (takes ~5 s)
+# 2. Author + export (takes ~10 s); also rewrites
+#    scripts/fixtures/controls-manifest.json
 blender --background --python scripts/blender/make-avatar-base.py -- \
     --out /tmp/avatar-base-raw.glb
 
@@ -144,8 +191,9 @@ cp /tmp/avatar-base-raw.glb apps/web/public/models/avatar-base.glb
 
 To change the curated set, edit `MACRO_SLIDERS` / `DETAIL_SLIDERS` in
 `scripts/blender/make-avatar-base.py` (available system target names live
-under the MPFB2 extension's `data/targets/` directory), regenerate, and
-update `MORPH_CONTROLS` in `apps/web/lib/controls.ts` to match.
+under the MPFB2 extension's `data/targets/` directory) and regenerate — the
+manifest updates itself and the script errors out on any manifest/shape-key
+mismatch.
 
 ## Gotchas
 
@@ -155,7 +203,13 @@ update `MORPH_CONTROLS` in `apps/web/lib/controls.ts` to match.
 - MPFB2's basemesh ships helper geometry; anything exported without
   `bake_modifiers_remove_helpers` will include invisible fitting meshes.
 - Blender's glTF exporter silently drops shape keys if `export_apply=True`.
-- MakeHuman targets index *all* basemesh vertices (body + helpers), so
-  vertex-index-based operations (target loading, rig weight import,
-  `symmetrize_shape_key`) must run **before** helper removal.
+- MakeHuman targets and mhclo fittings index *all* basemesh vertices
+  (body + helpers), so vertex-index-based operations (target loading, rig
+  weight import, asset fitting, per-morph refits) must run **before**
+  helper removal.
+- `blend_method` on Blender 5.x materials takes `CLIP` (not `MASK`); the
+  glTF alphaMode is derived from the node graph, not from `blend_method`
+  (`Math:Round` into Alpha ⇒ MASK, plain texture alpha ⇒ BLEND).
+- The eyes texture keeps its cornea UV region at alpha 0 — never export the
+  eyes material fully opaque or the iris disappears behind a gray shell.
 - `npm exec -y gltfpack` downloads ~680 MB into the npx cache.
