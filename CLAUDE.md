@@ -24,8 +24,8 @@ Users see and interact with their avatar on PC and mobile web now; VR
 3. **apps/web** — Next.js customizer: 3D viewport + slider/picker panel,
    profile persisted to localStorage.
 4. Base mesh: MakeHuman-derived, authored via Blender+MPFB2, exported as
-   glTF with a curated set of morph targets, meshopt-compressed. See
-   `docs/asset-pipeline.md`.
+   glTF with a curated set of morph targets, uncompressed (~1.9 MB; compression
+   deliberately deferred). See `docs/asset-pipeline.md`.
 5. Future: idle animation, physics, WebXR (Quest 3), non-humanoid rigs,
    upagent integration. Each is its own spec before implementation.
 

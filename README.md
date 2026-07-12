@@ -9,7 +9,7 @@ project is an "expertise" that will plug into a shared agent core
 
 ## Status
 
-POC in progress: a browser-based avatar customizer — one humanoid base
+POC complete: a browser-based avatar customizer — one humanoid base
 mesh, morph sliders (body/face), appearance colors, GPU-accelerated
 rendering via three.js/React Three Fiber. Movement, physics, VR (Quest),
 and agent-driven behavior come in later phases.
