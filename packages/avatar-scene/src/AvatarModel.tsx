@@ -27,6 +27,9 @@ export function AvatarModel({ url, profile }: { url: string; profile: AvatarProf
         if (!(material instanceof MeshStandardMaterial)) continue;
         const slot = MATERIAL_COLOR_SLOTS[material.name];
         if (slot) material.color = new Color(profile.appearance[slot]);
+        // The authored skin material is fairly glossy (roughness 0.6) and
+        // reads waxy under studio lighting; matte it out.
+        if (material.name === 'skin') material.roughness = Math.max(material.roughness, 0.82);
       }
     });
   }, [scene, profile]);
