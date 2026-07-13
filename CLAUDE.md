@@ -18,14 +18,24 @@ Users see and interact with their avatar on PC and mobile web now; VR
 ## Architecture (end picture)
 
 1. **avatar-core** — framework-agnostic avatar profile (morph values,
-   appearance) + serialization. The part a native app could reuse.
+   appearance incl. an optional skin-texture reference) + versioned
+   serialization (v1 → v2 migration), plus an IndexedDB-backed texture
+   store for user-uploaded skin textures. The part a native app could
+   reuse.
 2. **avatar-scene** — React Three Fiber components rendering the profile
-   onto a glTF humanoid (morph targets + material colors).
-3. **apps/web** — Next.js customizer: 3D viewport + slider/picker panel,
-   profile persisted to localStorage.
+   onto a glTF humanoid (morph targets + material colors/textures). The
+   viewer (`AvatarViewer`) also owns HDRI environment lighting, an accent
+   light rig, backdrop + contact shadows, and named camera view presets
+   (Face/Torso/Full) driven imperatively via a handle.
+3. **apps/web** — Next.js customizer: 3D viewport (+ camera preset
+   buttons) and a grouped slider/picker panel (gender preset toggle,
+   collapsible morph groups, skin texture presets/upload) generated from
+   `scripts/fixtures/controls-manifest.json`, profile persisted to
+   localStorage.
 4. Base mesh: MakeHuman-derived, authored via Blender+MPFB2, exported as
-   glTF with a curated set of morph targets, uncompressed (~1.9 MB; compression
-   deliberately deferred). See `docs/asset-pipeline.md`.
+   glTF with 46 curated morph targets plus real eyes/hair assets and
+   materials, uncompressed (~4.4 MB; compression deliberately deferred).
+   See `docs/asset-pipeline.md`.
 5. Future: idle animation, physics, WebXR (Quest 3), non-humanoid rigs,
    upagent integration. Each is its own spec before implementation.
 
