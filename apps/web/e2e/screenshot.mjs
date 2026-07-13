@@ -3,9 +3,9 @@
 // Usage: node apps/web/e2e/screenshot.mjs [outDir] [baseUrl] [view] \
 //          [--morph name=value ...] [--click "Button label" ...] \
 //          [--summary "Group label" ...] [--name shot.png]
-//   view: "Face" | "Torso" | "Full" -> clicks that overlay button, saves task-2-<view>.png
-//         "after-orbit" -> clicks Full, drags to orbit, saves task-2-after-orbit.png
-//         omitted -> original task-1 default + close-up sequence
+//   view: "Face" | "Torso" | "Full" -> clicks that overlay button, saves <view>.png
+//         "after-orbit" -> clicks Full, drags to orbit, saves after-orbit.png
+//         omitted -> default + close-up sequence
 //   --morph name=value (repeatable): after load, sets that morph target
 //         influence on every mesh via the window.__avatarupScene e2e hook.
 //         Useful for morphs that have no UI slider yet.
@@ -19,7 +19,7 @@
 //         headless) — e.g. the skin-texture upload input.
 //   --name shot.png: output file name (required with --morph/--click/
 //         --summary/--upload, optional with a view; ignored by the default
-//         task-1 sequence).
+//         two-shot sequence).
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
@@ -52,7 +52,7 @@ for (let i = 0; i < argv.length; i++) {
   }
 }
 
-const OUT_DIR = positional[0] ?? '.superpowers/sdd/shots';
+const OUT_DIR = positional[0] ?? '/tmp/avatarup-shots';
 const BASE_URL = positional[1] ?? 'http://localhost:3000';
 const VIEW_ARG = positional[2];
 const SETTLE_MS = 3000; // env map + soft shadow warmup
@@ -153,7 +153,7 @@ try {
       }
       await page.waitForTimeout(300);
     }
-    const shot = join(OUT_DIR, 'task-2-after-orbit.png');
+    const shot = join(OUT_DIR, 'after-orbit.png');
     await page.screenshot({ path: shot });
     console.log(`saved ${shot}`);
     await browser.close();
@@ -167,7 +167,7 @@ try {
     await applyClicks();
     await applyMorphs();
     await applyUploads();
-    const shot = join(OUT_DIR, outName ?? `task-2-${VIEW_ARG.toLowerCase()}.png`);
+    const shot = join(OUT_DIR, outName ?? `${VIEW_ARG.toLowerCase()}.png`);
     await page.screenshot({ path: shot });
     console.log(`saved ${shot}`);
     await browser.close();
@@ -185,7 +185,7 @@ try {
     process.exit(0);
   }
 
-  const defaultShot = join(OUT_DIR, 'task-1-default.png');
+  const defaultShot = join(OUT_DIR, 'default.png');
   await page.screenshot({ path: defaultShot });
   console.log(`saved ${defaultShot}`);
 
@@ -211,7 +211,7 @@ try {
       await page.waitForTimeout(200);
     }
     await page.waitForTimeout(800);
-    const closeShot = join(OUT_DIR, 'task-1-closeup.png');
+    const closeShot = join(OUT_DIR, 'closeup.png');
     await page.screenshot({ path: closeShot });
     console.log(`saved ${closeShot}`);
   }

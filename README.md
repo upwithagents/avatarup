@@ -16,8 +16,8 @@ viewport and a fuller customization panel.
   backdrop + contact shadows, and camera view presets (Face / Torso /
   Full / Reset) navigable via on-screen buttons.
 - **Avatar**: 46 morph targets (body, torso, head, face, eyes, nose,
-  mouth) driven by real MakeHuman-derived eyes and hair assets, plus
-  full-strength gender macros.
+  mouth), real MakeHuman-derived eyes and hair assets, and full-strength
+  gender macros.
 - **Panel**: a Female/Neutral/Male gender preset toggle, morph sliders
   grouped into collapsible sections, appearance color pickers, and skin
   texture presets + custom image upload (stored in IndexedDB).

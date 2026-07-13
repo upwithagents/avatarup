@@ -31,6 +31,22 @@ export interface MorphControl {
 /** All 46 morph controls, in manifest order (source of truth: the asset pipeline). */
 export const MORPH_CONTROLS: MorphControl[] = manifest as MorphControl[];
 
+// Guard against a manifest entry whose group isn't in GROUP_ORDER: such an
+// entry would silently vanish from the panel (GROUPED_CONTROLS filters by
+// GROUP_ORDER). Fail loudly at module load instead so a pipeline change that
+// adds a group can't drop sliders unnoticed.
+{
+  const known = new Set<string>(GROUP_ORDER);
+  const orphans = MORPH_CONTROLS.filter((c) => !known.has(c.group));
+  if (orphans.length > 0) {
+    throw new Error(
+      `controls-manifest.json has morphs in unknown groups (add to GROUP_ORDER): ${orphans
+        .map((c) => `${c.morph}:${c.group}`)
+        .join(', ')}`
+    );
+  }
+}
+
 export interface MorphControlGroup {
   group: ControlGroup;
   controls: MorphControl[];
