@@ -53,7 +53,7 @@ for (let i = 0; i < argv.length; i++) {
 }
 
 const OUT_DIR = positional[0] ?? '/tmp/avatarup-shots';
-const BASE_URL = positional[1] ?? 'http://localhost:3000';
+const BASE_URL = positional[1] ?? 'http://localhost:3000/avatarup';
 const VIEW_ARG = positional[2];
 const SETTLE_MS = 3000; // env map + soft shadow warmup
 

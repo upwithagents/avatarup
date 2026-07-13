@@ -3,9 +3,10 @@
 import { Canvas } from '@react-three/fiber';
 import { Backdrop, CameraControls, ContactShadows, Environment } from '@react-three/drei';
 import { Suspense, useCallback, useImperativeHandle, useRef, type ReactNode, type RefObject } from 'react';
+import { withBasePath } from './base-path';
 
 /** Vendored studio HDRI (Poly Haven "Studio Small 08", CC0), served by the host app. */
-const ENVIRONMENT_URL = '/hdri/studio_small_08_1k.hdr';
+const ENVIRONMENT_URL = withBasePath('/hdri/studio_small_08_1k.hdr');
 
 /** Named camera presets a host app can navigate to via {@link AvatarViewerHandle}. */
 export type AvatarView = 'face' | 'torso' | 'full';

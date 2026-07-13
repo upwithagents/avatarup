@@ -6,9 +6,10 @@
 // enabled, and both webpack (dev/prod) and Turbopack parse `.json` imports
 // natively regardless of workspace boundaries, so no build step or generated
 // TS file is needed to keep this in sync.
+import { withBasePath } from '@avatarup/avatar-scene';
 import manifest from '../../../scripts/fixtures/controls-manifest.json';
 
-export const MODEL_URL = '/models/avatar-base.glb';
+export const MODEL_URL = withBasePath('/models/avatar-base.glb');
 
 export const GROUP_ORDER = [
   'Body',

@@ -8,7 +8,7 @@
 // stays robust across the studio-lighting/material changes.
 import { chromium } from 'playwright';
 
-const BASE_URL = process.argv[2] ?? 'http://localhost:3000';
+const BASE_URL = process.argv[2] ?? 'http://localhost:3000/avatarup';
 
 // Known cold-launch flake: the first WebGL context creation right after a
 // fresh `pnpm dev` start occasionally no-ops on some GPUs/drivers. One retry
