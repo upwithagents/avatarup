@@ -26,13 +26,15 @@ SIZE=1024
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-# Low-frequency blotchy tone variation, shared across all presets so the
-# mottle pattern reads as "skin", not "noise" — a small per-tone seed offset
-# (via -seed) keeps them from being identical crops of the same plasma field.
+# Medium-frequency mottling from blurred Gaussian noise (~8 px blotches at
+# 1024). The body mesh's UV layout splits into islands (torso/arms/hands/
+# head); statistically uniform small-scale noise keeps every island at the
+# same average tone, so limbs can't render visibly lighter or darker than
+# the torso the way low-frequency plasma blotches did.
 gen_mottle() {
   local seed="$1" out="$2"
-  magick -size ${SIZE}x${SIZE} -seed "$seed" plasma:fractal -blur 0x12 -colorspace Gray -depth 8 "$TMP/mottle_raw_$seed.png"
-  magick -size ${SIZE}x${SIZE} xc:gray "$TMP/mottle_raw_$seed.png" -compose Blend -define compose:args=32 -composite -depth 8 "$out"
+  magick -size ${SIZE}x${SIZE} -seed "$seed" xc:gray -attenuate 1.2 +noise Gaussian -colorspace Gray -blur 0x4 -auto-level -depth 8 "$TMP/mottle_raw_$seed.png"
+  magick -size ${SIZE}x${SIZE} xc:gray "$TMP/mottle_raw_$seed.png" -compose Blend -define compose:args=24 -composite -depth 8 "$out"
 }
 
 # High-frequency fine grain (pores), independent of tone.
