@@ -39,8 +39,10 @@ function collectSkinMaterials(scene: Object3D) {
 
 function clearSkinTexture(materials: MeshStandardMaterial[]) {
   for (const material of materials) {
+    const prev = material.map;
     material.map = null;
     material.needsUpdate = true;
+    prev?.dispose();
   }
 }
 
@@ -117,7 +119,8 @@ export function AvatarModel({
       let source: string | Blob | null;
       try {
         source = await resolveSkinTexture(ref);
-      } catch {
+      } catch (err) {
+        console.warn('[AvatarModel] Failed to resolve skin texture', ref, err);
         source = null;
       }
       if (cancelled) return;
@@ -146,13 +149,16 @@ export function AvatarModel({
           texture.flipY = false;
           texture.needsUpdate = true;
           for (const material of materials) {
+            const prev = material.map;
             material.map = texture;
             material.needsUpdate = true;
+            if (prev && prev !== texture) prev.dispose();
           }
         },
         undefined,
-        () => {
+        (err) => {
           if (cancelled) return;
+          console.warn('[AvatarModel] Failed to load skin texture', ref, err);
           clearSkinTexture(materials);
           onSkinTextureUnavailable?.(ref);
         }

@@ -36,13 +36,23 @@ export function CustomizerPanel({ profile, onChange }: Props) {
     onChange(applyMorphPreset(profile, GENDER_PRESETS[gender]));
   }
 
+  function deletePreviousUpload(prev: AvatarProfile['appearance']['skinTexture']) {
+    if (prev?.kind === 'upload') {
+      getTextureStore()
+        .deleteTexture(prev.id)
+        .catch(() => {});
+    }
+  }
+
   function handleSkinTextureNone() {
     setUploadError(null);
+    deletePreviousUpload(profile.appearance.skinTexture);
     onChange(withSkinTexture(profile, null));
   }
 
   function handleSkinTexturePreset(id: string) {
     setUploadError(null);
+    deletePreviousUpload(profile.appearance.skinTexture);
     onChange(withSkinTexture(profile, { kind: 'preset', id }));
   }
 
@@ -59,8 +69,14 @@ export function CustomizerPanel({ profile, onChange }: Props) {
     setUploadError(null);
 
     const id = crypto.randomUUID();
-    await getTextureStore().saveTexture(id, file);
-    onChange(withSkinTexture(profile, { kind: 'upload', id }));
+    const prev = profile.appearance.skinTexture;
+    try {
+      await getTextureStore().saveTexture(id, file);
+      deletePreviousUpload(prev);
+      onChange(withSkinTexture(profile, { kind: 'upload', id }));
+    } catch {
+      setUploadError("Couldn't store the image — try a smaller file.");
+    }
   }
 
   return (
