@@ -41,12 +41,14 @@ export function PortalChrome() {
   if (!context) return null;
 
   return (
-    <PortalHeader
-      currentSlug="avatarup"
-      apps={context.apps}
-      userName={context.userName}
-      userEmail={context.userEmail}
-      logoutSlot={<a href="/api/auth/signout">Log out</a>}
-    />
+    <div data-portal-chrome>
+      <PortalHeader
+        currentSlug="avatarup"
+        apps={context.apps}
+        userName={context.userName}
+        userEmail={context.userEmail}
+        logoutSlot={<a href="/api/auth/signout">Log out</a>}
+      />
+    </div>
   );
 }
