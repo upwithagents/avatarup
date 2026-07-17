@@ -19,6 +19,13 @@
   }
 }
 
+/* Theme (paper/ink + terracotta accent) comes from the design system.
+   Imported last so its --background/--foreground (used by PortalHeader)
+   take precedence over this file's own tokens of the same name above. */
+@import "@upwithagents/ui/styles.css";
+/* Tailwind ignores node_modules by default; scan the UI package's classes. */
+@source "../node_modules/@upwithagents/ui/dist";
+
 body {
   background: var(--background);
   color: var(--foreground);
