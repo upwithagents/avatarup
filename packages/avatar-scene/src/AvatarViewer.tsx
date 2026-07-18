@@ -2,14 +2,23 @@
 
 import { Canvas } from '@react-three/fiber';
 import { Backdrop, CameraControls, ContactShadows, Environment } from '@react-three/drei';
-import { Suspense, useCallback, useImperativeHandle, useRef, type ReactNode, type RefObject } from 'react';
+import {
+  Suspense,
+  useCallback,
+  useImperativeHandle,
+  useRef,
+  type ReactNode,
+  type RefObject,
+} from 'react';
+import { Box3, Vector3 } from 'three';
 import { withBasePath } from './base-path';
+import { AvatarBoundsProvider } from './avatar-bounds-context';
+import { computeViewPresets, type AvatarView, type LookAt } from './avatar-bounds';
+
+export type { AvatarView } from './avatar-bounds';
 
 /** Vendored studio HDRI (Poly Haven "Studio Small 08", CC0), served by the host app. */
 const ENVIRONMENT_URL = withBasePath('/hdri/studio_small_08_1k.hdr');
-
-/** Named camera presets a host app can navigate to via {@link AvatarViewerHandle}. */
-export type AvatarView = 'face' | 'torso' | 'full';
 
 /** Imperative handle exposed via the `viewRef` prop — no three.js types leak through it. */
 export interface AvatarViewerHandle {
@@ -19,19 +28,13 @@ export interface AvatarViewerHandle {
   reset(): void;
 }
 
-interface LookAt {
-  position: [number, number, number];
-  target: [number, number, number];
-}
-
-/** Model bounds: feet at y≈0, hip line y≈0.95, torso center y≈1.15, head/face center y≈1.55–1.62, head top y≈1.67. */
-const VIEW_PRESETS: Record<AvatarView, LookAt> = {
-  face: { position: [0, 1.58, 0.75], target: [0, 1.58, 0] },
-  torso: { position: [0, 1.47, 1.39], target: [0, 1.32, 0] },
-  full: { position: [0, 1.3, 3.0], target: [0, 0.95, 0] },
-};
-
 const DEFAULT_VIEW: AvatarView = 'torso';
+
+// Seeds the camera before any mesh has reported real bounds — R3F's Canvas
+// needs a synchronous initial camera position, but the model loads
+// asynchronously. Roughly an average adult human standing at the origin;
+// replaced the instant the loaded model reports its actual bounding box.
+const FALLBACK_BOX = new Box3(new Vector3(-0.3, 0, -0.2), new Vector3(0.3, 1.7, 0.2));
 
 export function AvatarViewer({
   children,
@@ -42,39 +45,53 @@ export function AvatarViewer({
   viewRef?: RefObject<AvatarViewerHandle | null>;
 }) {
   const controlsRef = useRef<CameraControls | null>(null);
+  const presetsRef = useRef<Record<AvatarView, LookAt>>(computeViewPresets(FALLBACK_BOX));
 
-  // A `useEffect` in this component would run in the outer React tree, which
-  // can fire before @react-three/fiber's own reconciler has mounted
+  const applyPreset = useCallback((view: AvatarView, animate: boolean) => {
+    const preset = presetsRef.current[view];
+    controlsRef.current?.setLookAt(...preset.position, ...preset.target, animate);
+  }, []);
+
+  // A `useEffect` in this component would run in the outer React tree,
+  // which can fire before @react-three/fiber's own reconciler has mounted
   // CameraControls (its Canvas subtree renders on a separate root) — that
   // races and the initial setLookAt below is silently dropped. A ref
   // callback is invoked by whichever reconciler owns the instance, exactly
-  // when it mounts, so it can't lose that race. Memoized so it isn't
-  // re-invoked (and doesn't re-snap the camera) on every parent re-render.
-  const attachControls = useCallback((instance: CameraControls | null) => {
-    controlsRef.current = instance;
-    if (instance) {
-      const preset = VIEW_PRESETS[DEFAULT_VIEW];
-      instance.setLookAt(...preset.position, ...preset.target, false);
-    }
-  }, []);
+  // when it mounts, so it can't lose that race.
+  const attachControls = useCallback(
+    (instance: CameraControls | null) => {
+      controlsRef.current = instance;
+      if (instance) applyPreset(DEFAULT_VIEW, false);
+    },
+    [applyPreset]
+  );
+
+  // Fed to whatever model is rendered as `children`; recomputes the preset
+  // table from the mesh's real bounds and snaps to it (no animation — this
+  // is "get correctly framed on load", not a user-initiated move).
+  const reportBounds = useCallback(
+    (box: Box3) => {
+      presetsRef.current = computeViewPresets(box);
+      applyPreset(DEFAULT_VIEW, false);
+    },
+    [applyPreset]
+  );
 
   useImperativeHandle(
     viewRef,
     () => ({
       goTo(view) {
-        const preset = VIEW_PRESETS[view];
-        controlsRef.current?.setLookAt(...preset.position, ...preset.target, true);
+        applyPreset(view, true);
       },
       reset() {
-        const preset = VIEW_PRESETS[DEFAULT_VIEW];
-        controlsRef.current?.setLookAt(...preset.position, ...preset.target, true);
+        applyPreset(DEFAULT_VIEW, true);
       },
     }),
-    [],
+    [applyPreset]
   );
 
   return (
-    <Canvas camera={{ position: VIEW_PRESETS[DEFAULT_VIEW].position, fov: 38 }}>
+    <Canvas camera={{ position: presetsRef.current[DEFAULT_VIEW].position, fov: 38 }}>
       <color attach="background" args={['#0e0e12']} />
 
       {/* Image-based lighting carries most of the illumination for soft,
@@ -119,7 +136,7 @@ export function AvatarViewer({
         maxDistance={4.5}
         maxPolarAngle={Math.PI * 0.55}
       />
-      {children}
+      <AvatarBoundsProvider value={reportBounds}>{children}</AvatarBoundsProvider>
     </Canvas>
   );
 }

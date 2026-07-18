@@ -3,6 +3,7 @@
 import { useGLTF } from '@react-three/drei';
 import { useEffect, useRef } from 'react';
 import {
+  Box3,
   Color,
   Mesh,
   MeshStandardMaterial,
@@ -14,6 +15,7 @@ import {
 import type { AvatarProfile, SkinTextureRef } from '@avatarup/avatar-core';
 import { MATERIAL_COLOR_SLOTS, resolveMorphInfluences } from './apply-profile';
 import type { SkinTextureResolver } from './skin-texture';
+import { useReportAvatarBounds } from './avatar-bounds-context';
 
 // The authored skin material is fairly glossy (roughness 0.6) and reads
 // waxy under studio lighting; matte it out. No roughnessMap is involved, so
@@ -68,6 +70,17 @@ export function AvatarModel({
   onSkinTextureUnavailable?: (ref: SkinTextureRef) => void;
 }) {
   const { scene } = useGLTF(url);
+
+  const reportBounds = useReportAvatarBounds();
+
+  // Reported once per loaded model (not per morph/profile change) — the
+  // legacy hardcoded presets never re-framed as morphs changed either, and
+  // continuously re-snapping the camera while dragging a "Tall" slider
+  // would be jarring, not an improvement.
+  useEffect(() => {
+    reportBounds(new Box3().setFromObject(scene));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scene]);
 
   useEffect(() => {
     // E2E hook: lets browser tests (apps/web/e2e/*) reach the loaded scene,
