@@ -127,6 +127,19 @@ async function applyMorphs() {
 
 try {
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  // On the import/view page no <canvas> exists until an avatar is uploaded
+  // (the empty state is just an upload button) — apply uploads first so the
+  // canvas has a chance to appear. On pages that already render a canvas
+  // (e.g. the legacy customizer's default avatar) this is a no-op.
+  if (uploads.length > 0) {
+    // `domcontentloaded` fires once the HTML is parsed, but the file input
+    // only gets its onChange handler once the client component hydrates.
+    // setInputFiles() acts on the raw DOM node regardless of hydration
+    // state, so calling it too early silently no-ops. A short settle
+    // absorbs that race.
+    await page.waitForTimeout(500);
+    await applyUploads();
+  }
   await page.waitForSelector('canvas', { timeout: 30000 });
   await page.waitForTimeout(SETTLE_MS);
 
@@ -166,7 +179,6 @@ try {
     await page.waitForTimeout(1200); // smooth CameraControls transition
     await applyClicks();
     await applyMorphs();
-    await applyUploads();
     const shot = join(OUT_DIR, outName ?? `${VIEW_ARG.toLowerCase()}.png`);
     await page.screenshot({ path: shot });
     console.log(`saved ${shot}`);
@@ -177,7 +189,6 @@ try {
   if (morphs.length > 0 || clicks.length > 0 || summaries.length > 0 || uploads.length > 0) {
     await applyClicks();
     await applyMorphs();
-    await applyUploads();
     const shot = join(OUT_DIR, outName);
     await page.screenshot({ path: shot });
     console.log(`saved ${shot}`);
