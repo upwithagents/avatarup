@@ -24,7 +24,7 @@ class ModelErrorBoundary extends Component<{ children: ReactNode }, { failed: bo
   render() {
     if (this.state.failed) {
       return (
-        <div className="flex h-full items-center justify-center text-sm text-zinc-400">
+        <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
           Could not load this avatar file. Check that your browser supports
           WebGL, then try importing again.
         </div>
@@ -49,7 +49,7 @@ export function ImportedAvatarStage() {
   );
 
   return (
-    <div className="flex h-dvh flex-col bg-zinc-950">
+    <div className="flex h-dvh flex-col bg-background">
       <main className="relative min-w-0 flex-1">
         {status === 'ready' && objectUrl ? (
           // Remounting on a new objectUrl clears any previous load-error
@@ -62,22 +62,22 @@ export function ImportedAvatarStage() {
             </AvatarViewer>
           </ModelErrorBoundary>
         ) : (
-          <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center text-zinc-300">
-            <h1 className="text-lg font-semibold text-zinc-100">Import your avatar</h1>
-            <p className="max-w-md text-sm text-zinc-400">
+          <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center text-muted-foreground">
+            <h1 className="text-lg font-semibold text-foreground">Import your avatar</h1>
+            <p className="max-w-md text-sm text-muted-foreground">
               Upload a MetaHuman .glb export (mesh, skeleton, and textures)
               to view it here.
             </p>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="rounded-md border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-zinc-100 transition-colors hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400"
+              className="rounded-md border border-border bg-muted px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted-foreground/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               Upload avatar (.glb)
             </button>
             {/* Plain <a href> wouldn't pick up this build's static basePath
                 (see next.config.ts) and would 404; next/link does. */}
-            <Link href="/legacy" className="text-xs text-zinc-500 underline hover:text-zinc-400">
+            <Link href="/legacy" className="text-xs text-muted-foreground underline hover:text-muted-foreground">
               Looking for the old sandbox?
             </Link>
           </div>
@@ -90,7 +90,7 @@ export function ImportedAvatarStage() {
                 key={view}
                 type="button"
                 onClick={() => viewRef.current?.goTo(view)}
-                className="rounded-md border border-zinc-700 bg-zinc-900/80 px-3 py-1.5 text-sm text-zinc-100 backdrop-blur transition-colors hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400"
+                className="rounded-md border border-border bg-muted/80 px-3 py-1.5 text-sm text-foreground backdrop-blur transition-colors hover:bg-muted-foreground/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
                 {label}
               </button>
@@ -98,14 +98,14 @@ export function ImportedAvatarStage() {
             <button
               type="button"
               onClick={() => viewRef.current?.reset()}
-              className="rounded-md border border-zinc-700 bg-zinc-900/80 px-3 py-1.5 text-sm text-zinc-400 backdrop-blur transition-colors hover:bg-zinc-800 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400"
+              className="rounded-md border border-border bg-muted/80 px-3 py-1.5 text-sm text-muted-foreground backdrop-blur transition-colors hover:bg-muted-foreground/10 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               Reset
             </button>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="rounded-md border border-zinc-700 bg-zinc-900/80 px-3 py-1.5 text-sm text-zinc-100 backdrop-blur transition-colors hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400"
+              className="rounded-md border border-border bg-muted/80 px-3 py-1.5 text-sm text-foreground backdrop-blur transition-colors hover:bg-muted-foreground/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               Replace avatar
             </button>
@@ -115,7 +115,7 @@ export function ImportedAvatarStage() {
         {importError && (
           <div
             role="alert"
-            className="absolute right-4 top-4 max-w-xs rounded-md border border-red-800 bg-red-950/90 px-3 py-2 text-xs text-red-200 backdrop-blur"
+            className="absolute right-4 top-4 max-w-xs rounded-md border border-danger bg-danger/10 px-3 py-2 text-xs text-danger backdrop-blur"
           >
             {importError}
           </div>

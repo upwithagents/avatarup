@@ -80,15 +80,15 @@ export function CustomizerPanel({ profile, onChange }: Props) {
   }
 
   return (
-    <aside className="flex w-72 shrink-0 flex-col gap-6 overflow-y-auto border-l border-zinc-800 bg-zinc-900 p-4 text-zinc-100">
+    <aside className="flex w-72 shrink-0 flex-col gap-6 overflow-y-auto border-l border-border bg-muted p-4 text-foreground">
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-400">
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Gender
         </h2>
         <div
           role="group"
           aria-label="Gender preset"
-          className="flex overflow-hidden rounded-md border border-zinc-700"
+          className="flex overflow-hidden rounded-md border border-border"
         >
           {GENDER_OPTIONS.map(({ gender, label }, i) => (
             <button
@@ -97,11 +97,11 @@ export function CustomizerPanel({ profile, onChange }: Props) {
               aria-pressed={activeGender === gender}
               onClick={() => handleGenderClick(gender)}
               className={`flex-1 py-2 text-sm font-medium transition-colors ${
-                i > 0 ? 'border-l border-zinc-700' : ''
+                i > 0 ? 'border-l border-border' : ''
               } ${
                 activeGender === gender
-                  ? 'bg-zinc-100 text-zinc-900'
-                  : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                  ? 'bg-accent text-accent-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted-foreground/10'
               }`}
             >
               {label}
@@ -111,12 +111,12 @@ export function CustomizerPanel({ profile, onChange }: Props) {
       </section>
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-400">
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Shape
         </h2>
         {GROUPED_CONTROLS.map(({ group, controls }) => (
           <details key={group} open={group === 'Body'} className="mb-2">
-            <summary className="cursor-pointer select-none py-1.5 text-sm font-semibold text-zinc-200">
+            <summary className="cursor-pointer select-none py-1.5 text-sm font-semibold text-foreground">
               {group}
             </summary>
             <div className="pt-1 pl-1">
@@ -124,7 +124,7 @@ export function CustomizerPanel({ profile, onChange }: Props) {
                 <label key={morph} className="mb-3 block text-sm">
                   <span className="mb-1 flex justify-between">
                     {label}
-                    <span className="tabular-nums text-zinc-400">
+                    <span className="tabular-nums text-muted-foreground">
                       {(profile.morphs[morph] ?? 0).toFixed(2)}
                     </span>
                   </span>
@@ -150,7 +150,7 @@ export function CustomizerPanel({ profile, onChange }: Props) {
       </section>
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-400">
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Appearance
         </h2>
         {COLOR_CONTROLS.map(({ key, label }) => (
@@ -178,8 +178,8 @@ export function CustomizerPanel({ profile, onChange }: Props) {
               onClick={handleSkinTextureNone}
               className={`flex h-10 w-10 items-center justify-center rounded-md border text-[10px] font-medium transition-colors ${
                 profile.appearance.skinTexture === null
-                  ? 'border-zinc-100 bg-zinc-100 text-zinc-900'
-                  : 'border-zinc-700 bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                  ? 'border-accent bg-accent text-accent-foreground'
+                  : 'border-border bg-muted text-muted-foreground hover:bg-muted-foreground/10'
               }`}
             >
               None
@@ -196,7 +196,7 @@ export function CustomizerPanel({ profile, onChange }: Props) {
                   onClick={() => handleSkinTexturePreset(preset.id)}
                   title={preset.label}
                   className={`h-10 w-10 overflow-hidden rounded-md border-2 transition-colors ${
-                    pressed ? 'border-zinc-100' : 'border-zinc-700 hover:border-zinc-500'
+                    pressed ? 'border-accent' : 'border-border hover:border-muted-foreground'
                   }`}
                 >
                   <img src={preset.url} alt={preset.label} className="h-full w-full object-cover" />
@@ -207,7 +207,7 @@ export function CustomizerPanel({ profile, onChange }: Props) {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="mt-2 rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-200 transition-colors hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400"
+            className="mt-2 rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-muted-foreground/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             Upload…
           </button>
@@ -219,7 +219,7 @@ export function CustomizerPanel({ profile, onChange }: Props) {
             className="hidden"
           />
           {uploadError && (
-            <p role="alert" className="mt-2 text-xs text-red-400">
+            <p role="alert" className="mt-2 text-xs text-danger">
               {uploadError}
             </p>
           )}

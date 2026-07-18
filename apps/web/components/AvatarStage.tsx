@@ -29,7 +29,7 @@ class ModelErrorBoundary extends Component<
   render() {
     if (this.state.failed) {
       return (
-        <div className="flex h-full items-center justify-center text-sm text-zinc-400">
+        <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
           Could not load the avatar model. Check that the model file exists
           and your browser supports WebGL.
         </div>
@@ -65,7 +65,7 @@ export function AvatarStage({ profile, onProfileChange }: Props) {
   }, []);
 
   return (
-    <div className="flex h-dvh bg-zinc-950">
+    <div className="flex h-dvh bg-background">
       <main className="relative min-w-0 flex-1">
         <ModelErrorBoundary>
           <AvatarViewer viewRef={viewRef}>
@@ -85,7 +85,7 @@ export function AvatarStage({ profile, onProfileChange }: Props) {
               key={view}
               type="button"
               onClick={() => viewRef.current?.goTo(view)}
-              className="rounded-md border border-zinc-700 bg-zinc-900/80 px-3 py-1.5 text-sm text-zinc-100 backdrop-blur transition-colors hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400"
+              className="rounded-md border border-border bg-muted/80 px-3 py-1.5 text-sm text-foreground backdrop-blur transition-colors hover:bg-muted-foreground/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               {label}
             </button>
@@ -93,7 +93,7 @@ export function AvatarStage({ profile, onProfileChange }: Props) {
           <button
             type="button"
             onClick={() => viewRef.current?.reset()}
-            className="rounded-md border border-zinc-700 bg-zinc-900/80 px-3 py-1.5 text-sm text-zinc-400 backdrop-blur transition-colors hover:bg-zinc-800 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400"
+            className="rounded-md border border-border bg-muted/80 px-3 py-1.5 text-sm text-muted-foreground backdrop-blur transition-colors hover:bg-muted-foreground/10 hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             Reset
           </button>
