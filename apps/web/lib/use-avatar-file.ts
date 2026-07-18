@@ -90,7 +90,14 @@ export function useAvatarFile(): UseAvatarFileResult {
       }
 
       const blob = new Blob([buffer], { type: 'model/gltf-binary' });
-      await store.saveAvatar(blob);
+      try {
+        await store.saveAvatar(blob);
+      } catch {
+        setImportError(
+          "Couldn't save your avatar — try a smaller file or check your browser's storage settings."
+        );
+        return;
+      }
       setImportError(null);
       applyBlob(blob);
     },
