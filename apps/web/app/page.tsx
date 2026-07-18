@@ -1,9 +1,7 @@
 'use client';
 
-import { AvatarStage } from '@/components/AvatarStage';
-import { useAvatarProfile } from '@/lib/use-avatar-profile';
+import { ImportedAvatarStage } from '@/components/ImportedAvatarStage';
 
 export default function Home() {
-  const [profile, setProfile] = useAvatarProfile();
-  return <AvatarStage profile={profile} onProfileChange={setProfile} />;
+  return <ImportedAvatarStage />;
 }
