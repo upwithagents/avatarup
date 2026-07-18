@@ -60,10 +60,9 @@ placeholder** — a copy of the old customizer POC's
 `scripts/fixtures/test-avatar.glb` — not a real MetaHuman export. The
 repo owner still needs to author a real MetaHuman avatar manually in
 Unreal Engine (MetaHuman Creator) and export it to glTF; that hasn't
-happened yet (see `README.md`'s placeholder notice and
-`1_CLAUDE_WORKFLOW/plans/avatarup/2026-07-13-third-party-avatar-pivot-design.md`
-§2b for the full handoff process). The import/view pipeline is built and
-tested against the placeholder only.
+happened yet (see `README.md`'s placeholder notice for the handoff
+process). The import/view pipeline is built and tested against the
+placeholder only.
 
 Once a real MetaHuman export exists, this doc should be updated with its
 actual findings — mesh/material/morph-target structure, real file size,
