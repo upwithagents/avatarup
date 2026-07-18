@@ -1,10 +1,5 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -12,17 +7,10 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-/* PortalHeader's theme (paper/ink + terracotta accent), scoped to
-   [data-portal-chrome] so it doesn't collide with this app's own
-   --background/--foreground above. */
-@import "@upwithagents/ui/header-scope.css";
+/* Full shared theme (paper/ink + terracotta accent) — avatarup adopts it
+   app-wide, not just for the header. Defines --background/--foreground,
+   so avatarup's own copies above have been removed. */
+@import "@upwithagents/ui/styles.css";
 /* Tailwind ignores node_modules by default; scan the UI package's classes. */
 @source "../node_modules/@upwithagents/ui/dist";
 
