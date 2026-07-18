@@ -1,5 +1,11 @@
 # Asset pipeline: base avatar mesh
 
+**Status: legacy, unmaintained.** As of the third-party-avatar pivot,
+avatarup's primary flow imports a vendor-created avatar instead of
+authoring one through this pipeline (see `docs/imported-avatar-format.md`).
+This pipeline and its output still work and remain reachable via the
+app's `/legacy` route, but are not a target for future feature work.
+
 How `apps/web/public/models/avatar-base.glb` is authored and regenerated.
 The asset is fully scripted — no manual Blender GUI steps.
 
@@ -128,7 +134,7 @@ Then:
 
 ```bash
 pnpm dev            # app on :3000 (or :3001 if busy)
-node apps/web/e2e/customizer-smoke.mjs [http://localhost:3001]
+node apps/web/e2e/legacy-smoke.mjs [http://localhost:3001]
 ```
 
 For visual checks of morphs that have no UI slider yet:
