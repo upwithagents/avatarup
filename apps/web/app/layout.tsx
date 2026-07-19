@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Archivo, Inter, IBM_Plex_Mono } from "next/font/google";
+import { ThemeScript } from "@upwithagents/ui";
 import { PortalChrome } from "@/components/PortalChrome";
 import "./globals.css";
 
@@ -35,6 +36,9 @@ export default function RootLayout({
       lang="en"
       className={`${archivo.variable} ${inter.variable} ${plexMono.variable} h-full antialiased`}
     >
+      <head>
+        <ThemeScript />
+      </head>
       <body className="min-h-full flex flex-col">
         <PortalChrome />
         {children}
