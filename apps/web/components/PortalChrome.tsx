@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { PortalHeader, type PortalHeaderApp } from '@upwithagents/ui';
+import { AscentProgress, PortalHeader, type PortalHeaderApp } from '@upwithagents/ui';
 
 interface PortalContext {
   userName?: string;
@@ -38,10 +38,11 @@ export function PortalChrome() {
     };
   }, []);
 
-  if (!context) return null;
+  if (!context) return <AscentProgress />;
 
   return (
     <div data-portal-chrome>
+      <AscentProgress />
       <PortalHeader
         currentSlug="avatarup"
         apps={context.apps}
