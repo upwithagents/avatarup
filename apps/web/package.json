@@ -13,7 +13,7 @@
     "@avatarup/avatar-scene": "workspace:*",
     "@react-three/drei": "^10",
     "@react-three/fiber": "^9",
-    "@upwithagents/ui": "file:../../../updesignsystem",
+    "@upwithagents/ui": "file:../../../upwithagents-ui",
     "next": "16.2.10",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
