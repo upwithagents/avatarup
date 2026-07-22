@@ -41,20 +41,26 @@ export function PortalChrome({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  if (!context) return <AscentProgress />;
-
   return (
     <>
-      <div data-portal-chrome>
-        <PortalHeader
-          currentSlug="avatarup"
-          apps={context.apps}
-          userName={context.userName}
-          userEmail={context.userEmail}
-          logoutSlot={<a href="/api/auth/signout">Log out</a>}
-        />
-      </div>
-      {children}
+      {/* Mounted unconditionally: unmounting it the instant `context`
+          resolves would cut its own fill/fade animation short mid-transition,
+          which read as a flicker or a broken/discontinuous bar. */}
+      <AscentProgress />
+      {context && (
+        <>
+          <div data-portal-chrome>
+            <PortalHeader
+              currentSlug="avatarup"
+              apps={context.apps}
+              userName={context.userName}
+              userEmail={context.userEmail}
+              logoutSlot={<a href="/api/auth/signout">Log out</a>}
+            />
+          </div>
+          {children}
+        </>
+      )}
     </>
   );
 }
