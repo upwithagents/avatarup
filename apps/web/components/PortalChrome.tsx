@@ -17,8 +17,11 @@ interface PortalContext {
 // `context` starts null on both the server render and the client's first
 // render, and only flips once the mount effect's fetch resolves — so
 // PortalHeader (whose ThemeToggle reads window.matchMedia/localStorage)
-// never renders until after mount, avoiding a hydration mismatch.
-export function PortalChrome() {
+// never renders until after mount, avoiding a hydration mismatch. The
+// app's own children are held back behind the same gate, otherwise they'd
+// render immediately and the header would pop in on top of them later,
+// shoving everything else down the page.
+export function PortalChrome({ children }: { children: React.ReactNode }) {
   const [context, setContext] = useState<PortalContext | null>(null);
 
   useEffect(() => {
@@ -41,15 +44,17 @@ export function PortalChrome() {
   if (!context) return <AscentProgress />;
 
   return (
-    <div data-portal-chrome>
-      <AscentProgress />
-      <PortalHeader
-        currentSlug="avatarup"
-        apps={context.apps}
-        userName={context.userName}
-        userEmail={context.userEmail}
-        logoutSlot={<a href="/api/auth/signout">Log out</a>}
-      />
-    </div>
+    <>
+      <div data-portal-chrome>
+        <PortalHeader
+          currentSlug="avatarup"
+          apps={context.apps}
+          userName={context.userName}
+          userEmail={context.userEmail}
+          logoutSlot={<a href="/api/auth/signout">Log out</a>}
+        />
+      </div>
+      {children}
+    </>
   );
 }

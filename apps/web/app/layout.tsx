@@ -41,8 +41,7 @@ export default function RootLayout({
         <ThemeScript />
       </head>
       <body className="min-h-full flex flex-col">
-        <PortalChrome />
-        {children}
+        <PortalChrome>{children}</PortalChrome>
       </body>
     </html>
   );
