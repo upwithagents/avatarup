@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Archivo, Inter, IBM_Plex_Mono } from "next/font/google";
-import { ThemeScript } from "@upwithagents/ui";
+import { AppNav, ThemeScript } from "@upwithagents/ui";
 import { PortalChrome } from "@/components/PortalChrome";
 import "./globals.css";
 
@@ -41,7 +41,10 @@ export default function RootLayout({
         <ThemeScript />
       </head>
       <body className="min-h-full flex flex-col">
-        <PortalChrome>{children}</PortalChrome>
+        <PortalChrome>
+          <AppNav links={[{ href: "/", label: "Dashboard" }]} />
+          {children}
+        </PortalChrome>
       </body>
     </html>
   );
